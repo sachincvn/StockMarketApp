@@ -15,6 +15,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.plcoding.stockmarketapp.domain.model.StockInfo
+import com.plcoding.stockmarketapp.presentation.destinations.StockInfoScreenDestination
 import com.plcoding.stockmarketapp.presentation.stock_list.components.StockItem
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -60,7 +62,7 @@ fun StockListingScreen(
                         stock = state.stocks[i],
                         modifier = Modifier.fillMaxSize()
                             .clickable{
-
+                                navigator.navigate(StockInfoScreenDestination(symbol = state.stocks[i].symbol))
                             }
                             .padding(16.dp),
                         )
