@@ -4,9 +4,12 @@ import com.opencsv.CSVReader
 import com.plcoding.stockmarketapp.core.util.Resource
 import com.plcoding.stockmarketapp.data.csv.CSVParser
 import com.plcoding.stockmarketapp.data.local.StockDatabase
+import com.plcoding.stockmarketapp.data.mapper.toStockInfo
 import com.plcoding.stockmarketapp.data.mapper.toStockListing
 import com.plcoding.stockmarketapp.data.mapper.toStockListingEntity
 import com.plcoding.stockmarketapp.data.remote.StockApi
+import com.plcoding.stockmarketapp.domain.model.IntradayInfo
+import com.plcoding.stockmarketapp.domain.model.StockInfo
 import com.plcoding.stockmarketapp.domain.model.StockListing
 import com.plcoding.stockmarketapp.domain.repo.StockRepository
 import kotlinx.coroutines.flow.Flow
@@ -19,9 +22,10 @@ import javax.inject.Singleton
 
 @Singleton
 class StockRepositoryImpl @Inject constructor(
-    val api: StockApi,
-    val db : StockDatabase,
-    val stockListingParser : CSVParser<StockListing>
+    private val api: StockApi,
+    private val db : StockDatabase,
+    private val stockListingParser : CSVParser<StockListing>,
+    private val intradayInfoParser : CSVParser<IntradayInfo>,
 ) : StockRepository {
 
     private val dao = db.dao
@@ -65,6 +69,37 @@ class StockRepositoryImpl @Inject constructor(
                 ))
                 emit(Resource.Loading(false))
             }
+        }
+    }
+
+    override suspend fun getIntradayInfo(symbol: String): Resource<List<IntradayInfo>> {
+        return try {
+            val response = api.getIntradayInfo(symbol)
+            val  result = intradayInfoParser.parse(response.byteStream())
+            Resource.Success(result)
+        }
+        catch (ex : IOException){
+            ex.printStackTrace()
+            Resource.Error("Something went wrong + ${ex.message}")
+        }
+        catch (ex : HttpException){
+            ex.printStackTrace()
+            Resource.Error("Something went wrong + ${ex.message}")
+        }
+    }
+
+    override suspend fun getStockInfo(symbol: String): Resource<StockInfo> {
+        return try {
+            val result = api.getStockInfo(symbol)
+            Resource.Success(result.toStockInfo())
+        }
+        catch (ex : IOException){
+            ex.printStackTrace()
+            Resource.Error("Something went wrong + ${ex.message}")
+        }
+        catch (ex : HttpException){
+            ex.printStackTrace()
+            Resource.Error("Something went wrong + ${ex.message}")
         }
     }
 }

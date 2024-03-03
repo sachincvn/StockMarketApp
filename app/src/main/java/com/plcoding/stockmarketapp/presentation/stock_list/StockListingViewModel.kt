@@ -20,6 +20,10 @@ class StockListingViewModel @Inject constructor(
     var state by mutableStateOf(StockListingState())
 
     private var searchJob : Job? = null
+
+    init {
+        getStockListing()
+    }
     fun onEvent(event : StockListingEvents){
         when(event){
             is StockListingEvents.OnSearchQueryChange -> {
